@@ -17,6 +17,7 @@ class TS3Client:
 		self.buf = b''
 		self.schid = None
 		self.sock = socket.create_connection((config.clientquery_host, 25639))
+		self.sock.settimeout(30)
 		while self.schid == None:
 			for line in self.recv():
 				if line.startswith('selected schandlerid='):
@@ -52,27 +53,37 @@ def parse_line(line):
 		return
 	return args
 
-client = TS3Client()
-client.connect()
-client.send('clientnotifyregister', schandlerid=client.schid, event='notifytextmessage')
-while True:
-	for line in client.recv():
-		args = parse_line(line)
-		if args is None:
-			continue
+def handle_message(client, args):
+	if not args['msg'].startswith('!'):
+		return
+	command, text = args['msg'].split(' ', 1)
+	handler = commands.handlers.get(command[1:])
+	if not handler:
+		return
+	try:
+		response = handler(text)
+	except:
+		response = traceback.format_exc()
+	if response:
+		response = response.replace(' ', '\\s')
+		send_args = {'targetmode': args['targetmode']}
+		if 'target' in args:
+			send_args['target'] = args['invokerid']
+		client.send('sendtextmessage', msg=response, **send_args)
 
-		if args['msg'].startswith('!'):
-			command, text = args['msg'].split(' ', 1)
-			handler = commands.handlers.get(command[1:])
-			if not handler:
-				continue
-			try:
-				response = handler(text)
-			except:
-				response = traceback.format_exc()
-			if response:
-				response = response.replace(' ', '\\s')
-				send_args = {'targetmode': args['targetmode']}
-				if 'target' in args:
-					send_args['target'] = args['invokerid']
-				client.send('sendtextmessage', msg=response, **send_args)
+def main():
+	client = TS3Client()
+	client.connect()
+	client.send('clientnotifyregister', schandlerid=client.schid, event='notifytextmessage')
+	while True:
+		try:
+			for line in client.recv():
+				args = parse_line(line)
+				if args is None:
+					continue
+				handle_message(client, args)
+		except socket.timeout:
+			client.send('') # keepalive
+
+if __name__ == '__main__':
+	main()

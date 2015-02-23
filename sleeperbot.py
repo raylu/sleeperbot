@@ -5,6 +5,8 @@ import socket
 import oursql
 import requests
 
+import config
+
 class TS3Client:
 	def __init__(self):
 		self.sock = None
@@ -15,7 +17,7 @@ class TS3Client:
 	def connect(self):
 		self.buf = b''
 		self.schid = None
-		self.sock = socket.create_connection(('localhost', 25639))
+		self.sock = socket.create_connection((config.clientquery_host, 25639))
 		while self.schid == None:
 			for line in self.recv():
 				if line.startswith('selected schandlerid='):

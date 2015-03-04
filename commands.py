@@ -1,5 +1,9 @@
 import codecs
-import html.entities
+try:
+	import html.entities as htmlentitydefs # python 3
+except ImportError:
+	import htmlentitydefs # python 2
+	chr = unichr
 import json
 import operator
 import re
@@ -149,7 +153,7 @@ def calc(text):
 			elif match.group(2) == 'x':
 				return chr(int('0x'+ent, 16))
 		else:
-			cp = html.entities.name2codepoint.get(ent)
+			cp = htmlentitydefs.name2codepoint.get(ent)
 			if cp:
 				return chr(cp)
 			return match.group()

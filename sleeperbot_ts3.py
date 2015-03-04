@@ -66,6 +66,7 @@ def handle_message(client, args):
 		response = traceback.format_exc()
 	if response:
 		response = response.replace(' ', '\\s')
+		response = response.replace('\n', '\\n')
 		send_args = {'targetmode': args['targetmode']}
 		if 'target' in args:
 			send_args['target'] = args['invokerid']

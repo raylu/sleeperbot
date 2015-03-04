@@ -1,0 +1,3 @@
+[submodule "pymumble"]
+	path = pymumble
+	url = git@github.com:raylu/pymumble.git

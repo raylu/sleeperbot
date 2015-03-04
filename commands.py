@@ -100,7 +100,7 @@ def price_check(text):
 	amarr_prices = get_prices(typeid, system=amarr_system)
 	jita = format_prices(jita_prices)
 	amarr = format_prices(amarr_prices)
-	return '%s\\nJita: %s\\nAmarr: %s' % (item_name, jita, amarr)
+	return '%s\nJita: %s\nAmarr: %s' % (item_name, jita, amarr)
 
 def jumps(text):
 	split = text.split()

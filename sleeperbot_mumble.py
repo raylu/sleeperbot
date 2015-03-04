@@ -10,6 +10,7 @@ import pymumble
 from pymumble.constants import PYMUMBLE_CLBK_TEXTMESSAGERECEIVED
 
 import commands
+import config
 
 def message_received(msg):
 	command, text = msg.split(' ', 1)
@@ -24,7 +25,7 @@ def message_received(msg):
 		response = response.replace('\n', '<br>')
 		channel.send_text_message(response)
 
-mumble = pymumble.Mumble('voice.sc2gg.com', 64738, 'raylu-bot', '', debug=False)
+mumble = pymumble.Mumble(config.mumble_host, 64738, 'raylu-bot', config.mumble_password, debug=False)
 
 mumble.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, message_received)
 
@@ -32,6 +33,6 @@ mumble.start()
 mumble.is_ready()
 mumble.users.myself.mute()
 mumble.users.myself.deafen()
-channel = mumble.channels.find_by_name('secret hiding room')
+channel = mumble.channels.find_by_name(config.mumble_channel)
 channel.move_in()
 mumble.join()

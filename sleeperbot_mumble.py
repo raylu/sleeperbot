@@ -13,7 +13,10 @@ import commands
 import config
 
 def message_received(msg):
-	command, text = msg.split(' ', 1)
+	split = msg.split(' ', 1)
+	if len(split) == 1:
+		return
+	command, text = split
 	handler = commands.handlers.get(command[1:])
 	if not handler:
 		return
@@ -31,7 +34,7 @@ mumble.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, message_receive
 
 mumble.start()
 mumble.is_ready()
-mumble.users.myself.mute()
+mumble.users.myself.unmute()
 mumble.users.myself.deafen()
 channel = mumble.channels.find_by_name(config.mumble_channel)
 channel.move_in()

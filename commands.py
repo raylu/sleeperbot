@@ -95,7 +95,7 @@ def price_check(text):
 	result = item_info(text)
 	if not result:
 		return
-	if isinstance(result, str):
+	if isinstance(result, basestring):
 		return result
 	typeid, item_name = result
 	jita_system = 30000142

@@ -26,7 +26,8 @@ def message_received(msg):
 		response = traceback.format_exc()
 	if response:
 		response = response.replace('\n', '<br>')
-		channel.send_text_message(response)
+		channel_id = mumble.users.myself.get('channel_id')
+		mumble.channels[channel_id].send_text_message(response)
 
 mumble = pymumble.Mumble(config.mumble_host, 64738, 'raylu-bot', config.mumble_password, debug=False)
 

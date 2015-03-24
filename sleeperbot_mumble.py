@@ -7,6 +7,8 @@ sys.path.append(path.normpath(path.join(path.dirname(path.abspath(__file__)), 'p
 from collections import defaultdict
 import cStringIO
 from HTMLParser import HTMLParser
+import os
+import subprocess
 import time
 import traceback
 import urllib
@@ -62,6 +64,33 @@ class WikipediaParser(HTMLParser):
 		if self.state == self.STARTED:
 			self.text += data
 
+def encode_mp3(pcm):
+	with open(os.devnull, 'w') as devnull:
+		lame = subprocess.Popen(['lame', '-f', '-V9', '-', '-'],
+				stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=devnull)
+	lame.stdin.write(pcm)
+	mp3, _ = lame.communicate()
+	return mp3
+
+def query_wit(audio):
+	meaning = wit.post_speech(audio, content_type='mpeg3')
+	entities = meaning['outcome']['entities']
+	wikipedia_search_query = entities.get('wikipedia_search_query')
+	if 'wikipedia' in meaning['msg_body'].lower() and wikipedia_search_query:
+		query = urllib.urlencode({
+			'action': 'parse',
+			'page': wikipedia_search_query['value'],
+			'format': 'json',
+			'redirects': '1',
+		})
+		r = requests.get('https://en.wikipedia.org/w/api.php?' + query)
+		json = r.json()
+		if 'parse' in json:
+			text = json['parse']['text']['*']
+			parser = WikipediaParser()
+			parser.feed(text)
+			respond(parser.text)
+
 mumble = pymumble.Mumble(config.mumble_host, 64738, 'raylu-bot', config.mumble_password, debug=False)
 mumble.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, message_received)
 wit = Wit('EAW4ILIXTPSO57IIPLN7JYHMV2OUNXLQ')
@@ -93,23 +122,7 @@ while mumble.is_alive():
 				user_wavs[session].close()
 				buf = user_bufs[session]
 				try:
-					meaning = wit.post_speech(buf.getvalue())
-					entities = meaning['outcome']['entities']
-					wikipedia_search_query = entities.get('wikipedia_search_query')
-					if wikipedia_search_query:
-						query = urllib.urlencode({
-							'action': 'parse',
-							'page': wikipedia_search_query['value'],
-							'format': 'json',
-							'redirects': '1',
-						})
-						r = requests.get('https://en.wikipedia.org/w/api.php?' + query)
-						json = r.json()
-						if 'parse' in json:
-							text = json['parse']['text']['*']
-							parser = WikipediaParser()
-							parser.feed(text)
-							respond(parser.text)
+					query_wit(encode_mp3(buf.getvalue()))
 				except:
 					respond(traceback.format_exc())
 				buf.close()

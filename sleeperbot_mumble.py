@@ -9,6 +9,7 @@ import cStringIO
 from HTMLParser import HTMLParser
 import os
 import subprocess
+import thread
 import time
 import traceback
 import urllib
@@ -122,7 +123,8 @@ while mumble.is_alive():
 				user_wavs[session].close()
 				buf = user_bufs[session]
 				try:
-					query_wit(encode_mp3(buf.getvalue()))
+					mp3 = encode_mp3(buf.getvalue())
+					thread.start_new_thread(query_wit, (mp3,))
 				except:
 					respond(traceback.format_exc())
 				buf.close()

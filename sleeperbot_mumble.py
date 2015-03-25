@@ -7,7 +7,6 @@ sys.path.append(path.normpath(path.join(path.dirname(path.abspath(__file__)), 'p
 from collections import defaultdict
 import cStringIO
 from HTMLParser import HTMLParser
-import os
 import subprocess
 import thread
 import time
@@ -66,18 +65,18 @@ class WikipediaParser(HTMLParser):
 			self.text += data
 
 def encode_mp3(pcm):
-	with open(os.devnull, 'w') as devnull:
-		lame = subprocess.Popen(['lame', '-f', '-V9', '-', '-'],
-				stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=devnull)
+	lame = subprocess.Popen(['lame', '--silent', '-f', '-V9', '-', '-'],
+			stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 	lame.stdin.write(pcm)
 	mp3, _ = lame.communicate()
 	return mp3
 
 def query_wit(audio):
 	meaning = wit.post_speech(audio, content_type='mpeg3')
+	msg = meaning['msg_body']
 	entities = meaning['outcome']['entities']
 	wikipedia_search_query = entities.get('wikipedia_search_query')
-	if 'wikipedia' in meaning['msg_body'].lower() and wikipedia_search_query:
+	if 'wikipedia' in msg.lower() and wikipedia_search_query:
 		query = urllib.urlencode({
 			'action': 'parse',
 			'page': wikipedia_search_query['value'],
@@ -91,6 +90,14 @@ def query_wit(audio):
 			parser = WikipediaParser()
 			parser.feed(text)
 			respond(parser.text)
+
+			index = parser.text.find('.')
+			espeak = subprocess.Popen(['espeak', '--stdout', '-v', 'en-us', parser.text[:index]],
+					stdout=subprocess.PIPE)
+			sox = subprocess.Popen(['sox', '-', '-r', '44100', '-t', 'raw', '-'],
+					stdin=espeak.stdout, stdout=subprocess.PIPE)
+			frames, _ = sox.communicate()
+			mumble.sound_output.add_sound(frames)
 
 mumble = pymumble.Mumble(config.mumble_host, 64738, 'raylu-bot', config.mumble_password, debug=False)
 mumble.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, message_received)

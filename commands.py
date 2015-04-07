@@ -24,19 +24,19 @@ def price_check(text):
 		if system: params['usesystem'] = system
 		if region: params['regionlimit'] = region
 		try:
-			xml = minidom.parseString(rs.get(url, params=params).text)
+			dom = minidom.parseString(rs.get(url, params=params).text)
 		except xml.parsers.expat.ExpatError:
 			return None
 
-		buy = xml.getElementsByTagName('buy')[0]
+		buy = dom.getElementsByTagName('buy')[0]
 		buy_max = buy.getElementsByTagName('max')[0]
 		bid = float(buy_max.childNodes[0].data)
 
-		sell = xml.getElementsByTagName('sell')[0]
+		sell = dom.getElementsByTagName('sell')[0]
 		sell_min = sell.getElementsByTagName('min')[0]
 		ask = float(sell_min.childNodes[0].data)
 
-		all_orders = xml.getElementsByTagName('all')[0]
+		all_orders = dom.getElementsByTagName('all')[0]
 		all_volume = all_orders.getElementsByTagName('volume')[0]
 		volume = int(all_volume.childNodes[0].data)
 

@@ -35,7 +35,7 @@ mumble.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, message_receive
 
 mumble.start()
 mumble.is_ready()
-mumble.users.myself.unmute()
+mumble.users.myself.mute()
 mumble.users.myself.deafen()
 channel = mumble.channels.find_by_name(config.mumble_channel)
 channel.move_in()

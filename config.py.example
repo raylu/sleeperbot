@@ -1,7 +1,6 @@
-clientquery_host = 'owt'
-
 mumble_host = 'voice.sc2gg.com'
 mumble_password = 'bot'
 mumble_channel = 'secret hiding room'
+wit_token = 'abc123'
 
 # vim: set ft=python:

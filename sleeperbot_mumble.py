@@ -4,19 +4,17 @@ from os import path
 import sys
 sys.path.append(path.normpath(path.join(path.dirname(path.abspath(__file__)), 'pymumble')))
 
+from __future__ import print_function
 from collections import defaultdict
 import cStringIO
-from HTMLParser import HTMLParser
 import subprocess
 import thread
 import time
 import traceback
-import urllib
 import wave
 
 import pymumble
 from pymumble.constants import PYMUMBLE_CLBK_TEXTMESSAGERECEIVED
-import requests
 from wit.wit import Wit
 
 import config
@@ -42,7 +40,7 @@ def query_wit(audio):
 	print(meaning)
 	outcomes = meaning['outcomes']
 	for outcome in outcomes:
-		if outcome['intent'] == 'green_flame' and outcome['confidence'] >= 0.48:
+		if outcome['intent'] == 'green_flame' and outcome['confidence'] >= 0.45:
 			green_flame()
 			break
 

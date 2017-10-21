@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 from os import path
 import sys
 sys.path.append(path.normpath(path.join(path.dirname(path.abspath(__file__)), 'pymumble')))
 
-from __future__ import print_function
 from collections import defaultdict
 import cStringIO
 import subprocess

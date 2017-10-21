@@ -22,7 +22,8 @@ from wit.wit import Wit
 import config
 
 def message_received(msg):
-	print(msg)
+	if msg == 'green flame':
+		green_flame()
 
 def respond(text):
 	response = text.replace('\n', '<br>')
@@ -38,12 +39,14 @@ def encode_mp3(pcm):
 
 def query_wit(audio):
 	meaning = wit.post_speech(audio, content_type='mpeg3')
+	print(meaning)
 	outcomes = meaning['outcomes']
 	for outcome in outcomes:
-		if outcome['intent'] == 'green_flame' and outcome['confidence'] >= 0.49:
+		if outcome['intent'] == 'green_flame' and outcome['confidence'] >= 0.48:
+			green_flame()
 			break
-	else: # not green_flame
-		return
+
+def green_flame():
 	try:
 		wav = wave.open('green_flame.wav', 'r')
 		mumble.sound_output.add_sound(wav.readframes(wav.getnframes()))
@@ -81,11 +84,16 @@ while mumble.is_alive():
 				user_wavs[session].close()
 				buf = user_bufs[session]
 				try:
-					mp3 = encode_mp3(buf.getvalue())
-					thread.start_new_thread(query_wit, (mp3,))
+					n_bytes = buf.tell()
+					if 25000 < n_bytes < 500000:
+						mp3 = encode_mp3(buf.getvalue())
+						thread.start_new_thread(query_wit, (mp3,))
+					else:
+						print('rejected', n_bytes)
 				except:
 					respond(traceback.format_exc())
 				buf.close()
 				del user_bufs[session]
+				del user_wavs[session]
 			user_states[session] = False
 	time.sleep(0.01)
